@@ -13,7 +13,6 @@
     <div id="root"></div>
     <script type="text/babel">
         const MusicLibrary = () => {
-            // Initialize with stored albums or empty array
             const [albums, setAlbums] = React.useState(() => {
                 const saved = localStorage.getItem('musicLibrary');
                 return saved ? JSON.parse(saved) : [];
@@ -22,14 +21,18 @@
             const [newArtist, setNewArtist] = React.useState('');
             const [selectedAlbum, setSelectedAlbum] = React.useState(null);
 
-            // Save to localStorage whenever albums change
             React.useEffect(() => {
                 localStorage.setItem('musicLibrary', JSON.stringify(albums));
             }, [albums]);
 
             const addAlbum = () => {
                 if (newAlbum && newArtist) {
-                    setAlbums([...albums, { album: newAlbum, artist: newArtist }]);
+                    setAlbums([...albums, {
+                        album: newAlbum,
+                        artist: newArtist,
+                        listens: 0,
+                        skips: 0
+                    }]);
                     setNewAlbum('');
                     setNewArtist('');
                 }
@@ -37,6 +40,9 @@
 
             const removeAlbum = (index) => {
                 setAlbums(albums.filter((_, i) => i !== index));
+                if (selectedAlbum && selectedAlbum.album === albums[index].album) {
+                    setSelectedAlbum(null);
+                }
             };
 
             const pickRandomAlbum = () => {
@@ -46,7 +52,28 @@
                 }
             };
 
-            // Add file import function
+            const handleListen = () => {
+                if (selectedAlbum) {
+                    setAlbums(albums.map(album =>
+                        album.album === selectedAlbum.album && album.artist === selectedAlbum.artist
+                            ? { ...album, listens: (album.listens || 0) + 1 }
+                            : album
+                    ));
+                    setSelectedAlbum(null);  // Clear selection after logging listen
+                }
+            };
+
+            const handleSkip = () => {
+                if (selectedAlbum) {
+                    setAlbums(albums.map(album =>
+                        album.album === selectedAlbum.album && album.artist === selectedAlbum.artist
+                            ? { ...album, skips: (album.skips || 0) + 1 }
+                            : album
+                    ));
+                    setSelectedAlbum(null);  // Clear selection after logging skip
+                }
+            };
+
             const handleFileUpload = (event) => {
                 const file = event.target.files[0];
                 if (file) {
@@ -54,18 +81,14 @@
                     reader.onload = (e) => {
                         const parser = new DOMParser();
                         const xml = parser.parseFromString(e.target.result, "text/xml");
-
-                        // Get all tracks from iTunes library
                         const tracks = xml.getElementsByTagName("dict")[0].getElementsByTagName("dict");
-                        const newAlbums = new Set(); // Use Set to avoid duplicates
+                        const newAlbums = new Set();
 
-                        // Process each track
                         for (let track of tracks) {
                             const keys = track.getElementsByTagName("key");
                             let albumName = "";
                             let artistName = "";
 
-                            // Find album and artist for each track
                             for (let i = 0; i < keys.length; i++) {
                                 if (keys[i].textContent === "Album") {
                                     albumName = keys[i].nextElementSibling.textContent;
@@ -75,18 +98,19 @@
                                 }
                             }
 
-                            // Add to set if both album and artist exist
                             if (albumName && artistName) {
-                                newAlbums.add(JSON.stringify({ album: albumName, artist: artistName }));
+                                newAlbums.add(JSON.stringify({
+                                    album: albumName,
+                                    artist: artistName,
+                                    listens: 0,
+                                    skips: 0
+                                }));
                             }
                         }
 
-                        // Convert Set back to array and parse JSON strings
                         const albumsArray = Array.from(newAlbums).map(item => JSON.parse(item));
 
-                        // Update state with new albums
                         setAlbums(prevAlbums => {
-                            // Combine existing albums with new ones, removing duplicates
                             const combined = [...prevAlbums, ...albumsArray];
                             const unique = Array.from(new Set(combined.map(a => JSON.stringify(a))))
                                 .map(item => JSON.parse(item));
@@ -100,65 +124,97 @@
             };
 
             return (
-                <div className="max-w-2xl mx-auto p-4">
-                    <div className="bg-white rounded-lg shadow p-6">
-                        <h1 className="text-2xl font-bold mb-4">Random Album Picker</h1>
-                        <div className="space-y-4">
-                            {/* File input for later XML import */}
-                            <div className="flex gap-2">
-                                <input
-                                    type="file"
-                                    accept=".xml"
-                                    onChange={handleFileUpload}
-                                    className="w-full p-2 border rounded"
-                                />
-                            </div>
+                <div className="max-w-4xl mx-auto p-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* Left Column - Controls */}
+                        <div className="bg-white rounded-lg shadow p-6 space-y-4">
+                            <h1 className="text-2xl font-bold">Random Album Picker</h1>
 
-                            <div className="flex gap-2">
-                                <input
-                                    type="text"
-                                    placeholder="Album name"
-                                    value={newAlbum}
-                                    onChange={(e) => setNewAlbum(e.target.value)}
-                                    className="px-4 py-2 border rounded flex-1"
-                                />
-                                <input
-                                    type="text"
-                                    placeholder="Artist"
-                                    value={newArtist}
-                                    onChange={(e) => setNewArtist(e.target.value)}
-                                    className="px-4 py-2 border rounded flex-1"
-                                />
-                                <button
-                                    onClick={addAlbum}
-                                    className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-                                >
-                                    Add
-                                </button>
-                            </div>
-
-                            <button
-                                onClick={pickRandomAlbum}
-                                className="w-full px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
-                                disabled={albums.length === 0}
-                            >
-                                Pick Random Album ({albums.length} total)
-                            </button>
-
-                            {selectedAlbum && (
-                                <div className="mt-4 p-4 bg-blue-100 rounded-lg text-center">
-                                    <h3 className="font-bold">Selected Album:</h3>
-                                    <p>{selectedAlbum.album} - {selectedAlbum.artist}</p>
+                            <div className="space-y-4">
+                                <div>
+                                    <input
+                                        type="file"
+                                        accept=".xml"
+                                        onChange={handleFileUpload}
+                                        className="w-full p-2 border rounded"
+                                    />
                                 </div>
-                            )}
 
-                            <div className="mt-4 space-y-2">
+                                <div className="flex gap-2">
+                                    <input
+                                        type="text"
+                                        placeholder="Album name"
+                                        value={newAlbum}
+                                        onChange={(e) => setNewAlbum(e.target.value)}
+                                        className="px-4 py-2 border rounded flex-1"
+                                    />
+                                    <input
+                                        type="text"
+                                        placeholder="Artist"
+                                        value={newArtist}
+                                        onChange={(e) => setNewArtist(e.target.value)}
+                                        className="px-4 py-2 border rounded flex-1"
+                                    />
+                                    <button
+                                        onClick={addAlbum}
+                                        className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                                    >
+                                        Add
+                                    </button>
+                                </div>
+
+                                <button
+                                    onClick={pickRandomAlbum}
+                                    className="w-full px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+                                    disabled={albums.length === 0}
+                                >
+                                    Pick Random Album ({albums.length} total)
+                                </button>
+
+                                {/* Selected Album Card */}
+                                {selectedAlbum && (
+                                    <div className="mt-4 p-4 bg-blue-100 rounded-lg">
+                                        <h3 className="font-bold text-xl text-center mb-2">Now Playing</h3>
+                                        <p className="text-lg text-center mb-4">
+                                            <span className="font-semibold">{selectedAlbum.album}</span>
+                                            <br />
+                                            <span className="text-gray-600">{selectedAlbum.artist}</span>
+                                        </p>
+                                        <div className="flex gap-2">
+                                            <button
+                                                onClick={handleListen}
+                                                className="flex-1 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+                                            >
+                                                Listened
+                                            </button>
+                                            <button
+                                                onClick={handleSkip}
+                                                className="flex-1 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+                                            >
+                                                Skip
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Right Column - Album List */}
+                        <div className="bg-white rounded-lg shadow p-6">
+                            <h2 className="text-xl font-bold mb-4">Your Library</h2>
+                            <div className="space-y-2 max-h-[600px] overflow-y-auto">
                                 {albums.map((item, index) => (
                                     <div key={index} className="flex justify-between items-center p-2 bg-gray-100 rounded">
-                                        <span>{item.album} - {item.artist}</span>
+                                        <div className="flex-1">
+                                            <div className="font-medium">{item.album}</div>
+                                            <div className="text-sm text-gray-600">{item.artist}</div>
+                                            <div className="text-xs text-gray-500">
+                                                Listens: {item.listens || 0} | Skips: {item.skips || 0}
+                                            </div>
+                                        </div>
                                         <button
                                             onClick={() => removeAlbum(index)}
-                                            className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+                                            className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 ml-2"
                                         >
                                             Remove
                                         </button>
