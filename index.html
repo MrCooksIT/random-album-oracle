@@ -52,9 +52,48 @@
                 if (file) {
                     const reader = new FileReader();
                     reader.onload = (e) => {
-                        const text = e.target.result;
-                        // We'll implement XML parsing here later
-                        console.log("File loaded:", text.substring(0, 100));
+                        const parser = new DOMParser();
+                        const xml = parser.parseFromString(e.target.result, "text/xml");
+
+                        // Get all tracks from iTunes library
+                        const tracks = xml.getElementsByTagName("dict")[0].getElementsByTagName("dict");
+                        const newAlbums = new Set(); // Use Set to avoid duplicates
+
+                        // Process each track
+                        for (let track of tracks) {
+                            const keys = track.getElementsByTagName("key");
+                            let albumName = "";
+                            let artistName = "";
+
+                            // Find album and artist for each track
+                            for (let i = 0; i < keys.length; i++) {
+                                if (keys[i].textContent === "Album") {
+                                    albumName = keys[i].nextElementSibling.textContent;
+                                }
+                                if (keys[i].textContent === "Artist") {
+                                    artistName = keys[i].nextElementSibling.textContent;
+                                }
+                            }
+
+                            // Add to set if both album and artist exist
+                            if (albumName && artistName) {
+                                newAlbums.add(JSON.stringify({ album: albumName, artist: artistName }));
+                            }
+                        }
+
+                        // Convert Set back to array and parse JSON strings
+                        const albumsArray = Array.from(newAlbums).map(item => JSON.parse(item));
+
+                        // Update state with new albums
+                        setAlbums(prevAlbums => {
+                            // Combine existing albums with new ones, removing duplicates
+                            const combined = [...prevAlbums, ...albumsArray];
+                            const unique = Array.from(new Set(combined.map(a => JSON.stringify(a))))
+                                .map(item => JSON.parse(item));
+                            return unique;
+                        });
+
+                        alert(`Successfully imported ${albumsArray.length} albums!`);
                     };
                     reader.readAsText(file);
                 }
