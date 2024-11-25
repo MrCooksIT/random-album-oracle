@@ -64,21 +64,21 @@
                 });
             }, [albums, yearFilter, genreFilter]);
             React.useEffect(() => {
-        const loadAlbums = async () => {
-            try {
-                const snapshot = await db.collection('albums').get();
-                const loadedAlbums = snapshot.docs.map(doc => ({
-                    id: doc.id,
-                    ...doc.data()
-                }));
-                setAlbums(loadedAlbums);
-            } catch (error) {
-                console.error("Error loading albums:", error);
-                alert("Error loading your library. Please try again.");
-            }
-        };
-        loadAlbums();
-    }, []);
+                const loadAlbums = async () => {
+                    try {
+                        const snapshot = await db.collection('albums').get();
+                        const loadedAlbums = snapshot.docs.map(doc => ({
+                            id: doc.id,
+                            ...doc.data()
+                        }));
+                        setAlbums(loadedAlbums);
+                    } catch (error) {
+                        console.error("Error loading albums:", error);
+                        alert("Error loading your library. Please try again.");
+                    }
+                };
+                loadAlbums();
+            }, []);
             const saveAlbums = async (newAlbums) => {
                 // Clear existing albums
                 const batch = db.batch();
@@ -262,7 +262,7 @@
                                         value={yearFilter}
                                         onChange={(e) => setYearFilter(e.target.value)}
                                         placeholder="Filter by year..."
-                                        className="w-full px-4 py-2 rounded-lg bg-zinc-800 border border-zinc-700"
+                                        className="flex-1 px-4 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-white placeholder-zinc-400 w-full"
                                         list="year-options"
                                     />
                                     <datalist id="year-options">
@@ -279,7 +279,7 @@
                                         value={genreFilter}
                                         onChange={(e) => setGenreFilter(e.target.value)}
                                         placeholder="Filter by genre..."
-                                        className="w-full px-4 py-2 rounded-lg bg-zinc-800 border border-zinc-700"
+                                        className="w-full px-4 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-white placeholder-zinc-400"
                                         list="genre-options"
                                     />
                                     <datalist id="genre-options">
