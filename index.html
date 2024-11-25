@@ -13,10 +13,19 @@
     <div id="root"></div>
     <script type="text/babel">
         const MusicLibrary = () => {
-            const [albums, setAlbums] = React.useState([]);
+            // Initialize with stored albums or empty array
+            const [albums, setAlbums] = React.useState(() => {
+                const saved = localStorage.getItem('musicLibrary');
+                return saved ? JSON.parse(saved) : [];
+            });
             const [newAlbum, setNewAlbum] = React.useState('');
             const [newArtist, setNewArtist] = React.useState('');
             const [selectedAlbum, setSelectedAlbum] = React.useState(null);
+
+            // Save to localStorage whenever albums change
+            React.useEffect(() => {
+                localStorage.setItem('musicLibrary', JSON.stringify(albums));
+            }, [albums]);
 
             const addAlbum = () => {
                 if (newAlbum && newArtist) {
@@ -26,10 +35,28 @@
                 }
             };
 
+            const removeAlbum = (index) => {
+                setAlbums(albums.filter((_, i) => i !== index));
+            };
+
             const pickRandomAlbum = () => {
                 if (albums.length > 0) {
                     const randomIndex = Math.floor(Math.random() * albums.length);
                     setSelectedAlbum(albums[randomIndex]);
+                }
+            };
+
+            // Add file import function
+            const handleFileUpload = (event) => {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const text = e.target.result;
+                        // We'll implement XML parsing here later
+                        console.log("File loaded:", text.substring(0, 100));
+                    };
+                    reader.readAsText(file);
                 }
             };
 
@@ -38,6 +65,16 @@
                     <div className="bg-white rounded-lg shadow p-6">
                         <h1 className="text-2xl font-bold mb-4">Random Album Picker</h1>
                         <div className="space-y-4">
+                            {/* File input for later XML import */}
+                            <div className="flex gap-2">
+                                <input
+                                    type="file"
+                                    accept=".xml"
+                                    onChange={handleFileUpload}
+                                    className="w-full p-2 border rounded"
+                                />
+                            </div>
+
                             <div className="flex gap-2">
                                 <input
                                     type="text"
@@ -66,7 +103,7 @@
                                 className="w-full px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
                                 disabled={albums.length === 0}
                             >
-                                Pick Random Album
+                                Pick Random Album ({albums.length} total)
                             </button>
 
                             {selectedAlbum && (
@@ -80,6 +117,12 @@
                                 {albums.map((item, index) => (
                                     <div key={index} className="flex justify-between items-center p-2 bg-gray-100 rounded">
                                         <span>{item.album} - {item.artist}</span>
+                                        <button
+                                            onClick={() => removeAlbum(index)}
+                                            className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+                                        >
+                                            Remove
+                                        </button>
                                     </div>
                                 ))}
                             </div>
