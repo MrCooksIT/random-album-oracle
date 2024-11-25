@@ -194,12 +194,10 @@
                     <div className="max-w-7xl mx-auto space-y-4">
                         {/* Header */}
                         <div className="apple-blur rounded-lg p-6 flex justify-between items-center">
-                            <h1 className="text-3xl font-bold bg-gradient-to-r from-pink-500 to-violet-500 bg-clip-text text-transparent">
-                                Album Arcade
-                            </h1>
+                            <h1 className="text-3xl font-bold text-white">Album Arcade</h1>
                             <button
                                 onClick={() => setShowLibrary(!showLibrary)}
-                                className="px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+                                className="px-4 py-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 transition-colors"
                             >
                                 {showLibrary ? 'Hide Library' : 'Show Library'}
                             </button>
@@ -209,44 +207,34 @@
                             {/* Main Controls */}
                             <div className="apple-blur rounded-lg p-6 space-y-6">
                                 {/* Filters */}
-                                <div className="space-y-4">
-                                    <input
-                                        type="text"
-                                        placeholder="Search..."
-                                        value={filterText}
-                                        onChange={(e) => setFilterText(e.target.value)}
-                                        className="w-full px-4 py-3 rounded-lg bg-white/10 border border-white/10 focus:border-white/20 transition-colors"
-                                    />
+                                <div className="flex gap-4">
+                                    <select
+                                        value={yearFilter}
+                                        onChange={(e) => setYearFilter(e.target.value)}
+                                        className="flex-1 px-4 py-2 rounded-lg bg-zinc-800 border border-zinc-700"
+                                    >
+                                        <option value="">All Years</option>
+                                        {years.map(year => (
+                                            <option key={year} value={year}>{year}</option>
+                                        ))}
+                                    </select>
 
-                                    <div className="flex gap-4">
-                                        <select
-                                            value={yearFilter}
-                                            onChange={(e) => setYearFilter(e.target.value)}
-                                            className="flex-1 px-4 py-2 rounded-lg bg-white/10 border border-white/10"
-                                        >
-                                            <option value="">All Years</option>
-                                            {years.map(year => (
-                                                <option key={year} value={year}>{year}</option>
-                                            ))}
-                                        </select>
-
-                                        <select
-                                            value={genreFilter}
-                                            onChange={(e) => setGenreFilter(e.target.value)}
-                                            className="flex-1 px-4 py-2 rounded-lg bg-white/10 border border-white/10"
-                                        >
-                                            <option value="">All Genres</option>
-                                            {genres.map(genre => (
-                                                <option key={genre} value={genre}>{genre}</option>
-                                            ))}
-                                        </select>
-                                    </div>
+                                    <select
+                                        value={genreFilter}
+                                        onChange={(e) => setGenreFilter(e.target.value)}
+                                        className="flex-1 px-4 py-2 rounded-lg bg-zinc-800 border border-zinc-700"
+                                    >
+                                        <option value="">All Genres</option>
+                                        {genres.map(genre => (
+                                            <option key={genre} value={genre}>{genre}</option>
+                                        ))}
+                                    </select>
                                 </div>
 
                                 {/* Random Button */}
                                 <button
                                     onClick={pickRandomAlbum}
-                                    className="w-full px-6 py-4 rounded-lg bg-gradient-to-r from-pink-500 to-violet-500 hover:opacity-90 font-bold"
+                                    className="w-full px-6 py-4 rounded-lg bg-zinc-800 hover:bg-zinc-700 font-bold text-white transition-colors"
                                     disabled={filteredAlbums.length === 0}
                                 >
                                     Pick Random Album ({filteredAlbums.length})
@@ -254,31 +242,31 @@
 
                                 {/* Selected Album */}
                                 {selectedAlbum && (
-                                    <div className="bg-white/10 rounded-lg p-6">
+                                    <div className="bg-zinc-800/50 rounded-lg p-6">
                                         <div className="text-center space-y-4">
                                             <div className="flex items-center justify-center gap-2">
-                                                <span className="text-gray-400">Now Playing</span>
+                                                <span className="text-zinc-400">Now Playing</span>
                                                 <button
                                                     onClick={copyToClipboard}
-                                                    className="text-gray-400 hover:text-white"
+                                                    className="text-zinc-400 hover:text-white"
                                                 >
                                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
                                                     </svg>
                                                 </button>
                                             </div>
-                                            <h3 className="text-2xl font-bold">{selectedAlbum.album}</h3>
-                                            <p className="text-gray-400">{selectedAlbum.artist}</p>
+                                            <h3 className="text-2xl font-bold text-white">{selectedAlbum.album}</h3>
+                                            <p className="text-zinc-400">{selectedAlbum.artist}</p>
                                             <div className="flex gap-4">
                                                 <button
                                                     onClick={handleListen}
-                                                    className="flex-1 py-3 rounded-lg bg-green-500 hover:bg-green-600"
+                                                    className="flex-1 py-3 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-white"
                                                 >
                                                     Listened
                                                 </button>
                                                 <button
                                                     onClick={handleSkip}
-                                                    className="flex-1 py-3 rounded-lg bg-red-500 hover:bg-red-600"
+                                                    className="flex-1 py-3 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-white"
                                                 >
                                                     Skip
                                                 </button>
@@ -288,21 +276,21 @@
                                 )}
 
                                 {/* Upload Controls */}
-                                <div className="border-t border-white/10 pt-4">
+                                <div className="border-t border-zinc-800 pt-4">
                                     <button
                                         onClick={() => setShowUpload(!showUpload)}
-                                        className="text-gray-400 hover:text-white"
+                                        className="text-zinc-400 hover:text-white"
                                     >
                                         {showUpload ? 'Hide Upload Options' : 'Show Upload Options'}
                                     </button>
 
                                     {showUpload && (
-                                        <div className="mt-4 p-4 bg-white/5 rounded-lg">
+                                        <div className="mt-4 p-4 bg-zinc-800/50 rounded-lg">
                                             <input
                                                 type="file"
                                                 accept=".xml"
                                                 onChange={handleFileUpload}
-                                                className="w-full p-2 mb-4 bg-white/10 rounded border border-white/10"
+                                                className="w-full p-2 mb-4 bg-zinc-900 rounded"
                                             />
                                             <div className="flex gap-2">
                                                 <input
@@ -310,18 +298,18 @@
                                                     placeholder="Album name"
                                                     value={newAlbum}
                                                     onChange={(e) => setNewAlbum(e.target.value)}
-                                                    className="flex-1 px-4 py-2 bg-white/10 rounded border border-white/10"
+                                                    className="flex-1 px-4 py-2 bg-zinc-900 rounded"
                                                 />
                                                 <input
                                                     type="text"
                                                     placeholder="Artist"
                                                     value={newArtist}
                                                     onChange={(e) => setNewArtist(e.target.value)}
-                                                    className="flex-1 px-4 py-2 bg-white/10 rounded border border-white/10"
+                                                    className="flex-1 px-4 py-2 bg-zinc-900 rounded"
                                                 />
                                                 <button
                                                     onClick={addAlbum}
-                                                    className="px-4 py-2 rounded bg-white/10 hover:bg-white/20"
+                                                    className="px-4 py-2 rounded bg-zinc-900 hover:bg-zinc-800"
                                                 >
                                                     Add
                                                 </button>
@@ -334,9 +322,9 @@
                             {/* Library */}
                             {showLibrary && (
                                 <div className="apple-blur rounded-lg">
-                                    <div className="p-4 border-b border-white/10 flex justify-between items-center">
+                                    <div className="p-4 border-b border-zinc-800 flex justify-between items-center">
                                         <h2 className="text-xl font-bold">Your Library</h2>
-                                        <div className="text-sm text-gray-400">
+                                        <div className="text-sm text-zinc-400">
                                             {filteredAlbums.length} albums
                                         </div>
                                     </div>
@@ -345,21 +333,21 @@
                                             {filteredAlbums.map((item, index) => (
                                                 <div
                                                     key={index}
-                                                    className="hover-scale flex justify-between items-start p-3 bg-white/5 rounded-lg hover:bg-white/10 group transition-all"
+                                                    className="hover-scale flex justify-between items-start p-3 bg-zinc-800/50 rounded-lg hover:bg-zinc-700/50 group transition-all"
                                                 >
                                                     <div className="flex-1">
-                                                        <div className="font-medium">{item.album}</div>
-                                                        <div className="text-sm text-gray-400">{item.artist}</div>
-                                                        <div className="text-xs text-gray-500">
+                                                        <div className="font-medium text-white">{item.album}</div>
+                                                        <div className="text-sm text-zinc-400">{item.artist}</div>
+                                                        <div className="text-xs text-zinc-500">
                                                             {item.year} • {item.genre}
                                                         </div>
-                                                        <div className="text-xs text-gray-500 mt-1">
+                                                        <div className="text-xs text-zinc-500 mt-1">
                                                             Plays: {item.listens || 0} | Skips: {item.skips || 0}
                                                         </div>
                                                     </div>
                                                     <button
                                                         onClick={() => removeAlbum(index)}
-                                                        className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 transition-opacity"
+                                                        className="opacity-0 group-hover:opacity-100 text-zinc-400 hover:text-red-500 transition-opacity"
                                                     >
                                                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
