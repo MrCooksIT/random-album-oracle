@@ -207,28 +207,38 @@
                             {/* Main Controls */}
                             <div className="apple-blur rounded-lg p-6 space-y-6">
                                 {/* Filters */}
-                                <div className="flex gap-4">
-                                    <select
+                                <div className="flex-1 relative">
+                                    <input
+                                        type="text"
                                         value={yearFilter}
                                         onChange={(e) => setYearFilter(e.target.value)}
-                                        className="flex-1 px-4 py-2 rounded-lg bg-zinc-800 border border-zinc-700"
-                                    >
+                                        placeholder="Filter by year..."
+                                        className="w-full px-4 py-2 rounded-lg bg-zinc-800 border border-zinc-700"
+                                        list="year-options"
+                                    />
+                                    <datalist id="year-options">
                                         <option value="">All Years</option>
                                         {years.map(year => (
                                             <option key={year} value={year}>{year}</option>
                                         ))}
-                                    </select>
+                                    </datalist>
+                                </div>
 
-                                    <select
+                                <div className="flex-1 relative">
+                                    <input
+                                        type="text"
                                         value={genreFilter}
                                         onChange={(e) => setGenreFilter(e.target.value)}
-                                        className="flex-1 px-4 py-2 rounded-lg bg-zinc-800 border border-zinc-700"
-                                    >
+                                        placeholder="Filter by genre..."
+                                        className="w-full px-4 py-2 rounded-lg bg-zinc-800 border border-zinc-700"
+                                        list="genre-options"
+                                    />
+                                    <datalist id="genre-options">
                                         <option value="">All Genres</option>
                                         {genres.map(genre => (
                                             <option key={genre} value={genre}>{genre}</option>
                                         ))}
-                                    </select>
+                                    </datalist>
                                 </div>
 
                                 {/* Random Button */}
@@ -361,7 +371,7 @@
                             )}
                         </div>
                     </div>
-                </div>
+                </div >
             );
         };
 
