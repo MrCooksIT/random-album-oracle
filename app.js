@@ -1,24 +1,4 @@
-// UI Components
-const Button = ({ children, onClick, className = '', disabled = false }) => (
-  <button
-    onClick={onClick}
-    disabled={disabled}
-    className={`px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50 ${className}`}
-  >
-    {children}
-  </button>
-);
-
-const Input = ({ placeholder, value, onChange }) => (
-  <input
-    type="text"
-    placeholder={placeholder}
-    value={value}
-    onChange={onChange}
-    className="px-4 py-2 border rounded focus:ring-2 focus:ring-blue-500 focus:outline-none"
-  />
-);
-
+// Create the React component first
 const MusicLibrary = () => {
   const [albums, setAlbums] = React.useState(() => {
     const saved = localStorage.getItem('albums');
@@ -54,44 +34,52 @@ const MusicLibrary = () => {
   return (
     <div className="max-w-2xl mx-auto p-4 space-y-4">
       <div className="bg-white rounded-lg shadow p-6">
-        <h1 className="text-2xl font-bold mb-4 flex items-center gap-2">
-          Random Album Picker
-        </h1>
+        <h1 className="text-2xl font-bold mb-4">Random Album Picker</h1>
         <div className="space-y-4">
           <div className="flex gap-2">
-            <Input
+            <input
+              type="text"
               placeholder="Album name"
               value={newAlbum}
               onChange={(e) => setNewAlbum(e.target.value)}
+              className="px-4 py-2 border rounded flex-1"
             />
-            <Input
+            <input
+              type="text"
               placeholder="Artist"
               value={newArtist}
               onChange={(e) => setNewArtist(e.target.value)}
+              className="px-4 py-2 border rounded flex-1"
             />
-            <Button onClick={addAlbum}>
+            <button
+              onClick={addAlbum}
+              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            >
               Add
-            </Button>
+            </button>
           </div>
 
           <div className="space-y-2">
             {albums.map((item, index) => (
               <div key={index} className="flex justify-between items-center p-2 bg-gray-100 rounded">
                 <span>{item.album} - {item.artist}</span>
-                <Button onClick={() => removeAlbum(index)}>
+                <button
+                  onClick={() => removeAlbum(index)}
+                  className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+                >
                   Remove
-                </Button>
+                </button>
               </div>
             ))}
           </div>
 
-          <Button
+          <button
             onClick={pickRandomAlbum}
-            className="w-full"
+            className="w-full px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
             disabled={albums.length === 0}
           >
             Pick Random Album
-          </Button>
+          </button>
 
           {selectedAlbum && (
             <div className="mt-4 p-4 bg-blue-100 rounded-lg text-center">
@@ -105,4 +93,8 @@ const MusicLibrary = () => {
   );
 };
 
-ReactDOM.render(<MusicLibrary />, document.getElementById('root'));
+// Wait for DOM to load
+document.addEventListener('DOMContentLoaded', () => {
+  const root = ReactDOM.createRoot(document.getElementById('root'));
+  root.render(<MusicLibrary />);
+});
