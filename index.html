@@ -56,18 +56,29 @@
             const [showLibrary, setShowLibrary] = React.useState(true);
             const [yearFilter, setYearFilter] = React.useState('');
             const [genreFilter, setGenreFilter] = React.useState('');
-
+            const filteredAlbums = React.useMemo(() => {
+                return albums.filter(album => {
+                    const matchesYear = !yearFilter || album.year === yearFilter;
+                    const matchesGenre = !genreFilter || album.genre === genreFilter;
+                    return matchesYear && matchesGenre;
+                });
+            }, [albums, yearFilter, genreFilter]);
             React.useEffect(() => {
-                const loadAlbums = async () => {
-                    const snapshot = await db.collection('albums').get();
-                    const loadedAlbums = snapshot.docs.map(doc => ({
-                        id: doc.id,
-                        ...doc.data()
-                    }));
-                    setAlbums(loadedAlbums);
-                };
-                loadAlbums();
-            }, []);
+        const loadAlbums = async () => {
+            try {
+                const snapshot = await db.collection('albums').get();
+                const loadedAlbums = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+                setAlbums(loadedAlbums);
+            } catch (error) {
+                console.error("Error loading albums:", error);
+                alert("Error loading your library. Please try again.");
+            }
+        };
+        loadAlbums();
+    }, []);
             const saveAlbums = async (newAlbums) => {
                 // Clear existing albums
                 const batch = db.batch();
@@ -210,22 +221,6 @@
                 Array.from(new Set(albums.map(a => a.genre))).sort().filter(Boolean),
                 [albums]
             );
-
-            const filteredAlbums = React.useMemo(() => {
-                return albums.filter(album => {
-                    const matchesSearch = !filterText ||
-                        album.album.toLowerCase().includes(filterText.toLowerCase()) ||
-                        album.artist.toLowerCase().includes(filterText.toLowerCase());
-                    const matchesYear = !yearFilter || album.year === yearFilter;
-                    const matchesGenre = !genreFilter || album.genre === genreFilter;
-                    return matchesSearch && matchesYear && matchesGenre;
-                });
-            }, [albums, filterText, yearFilter, genreFilter]);
-
-            // Save to localStorage
-            React.useEffect(() => {
-                localStorage.setItem('musicLibrary', JSON.stringify(albums));
-            }, [albums]);
 
             return (
                 <div className="min-h-screen bg-black p-4">
