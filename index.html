@@ -47,7 +47,16 @@
         const db = firebase.firestore();
 
         const MusicLibrary = () => {
-            // State definitions
+
+            const [albums, setAlbums] = React.useState([]);
+            const [newAlbum, setNewAlbum] = React.useState('');
+            const [newArtist, setNewArtist] = React.useState('');
+            const [selectedAlbum, setSelectedAlbum] = React.useState(null);
+            const [showUpload, setShowUpload] = React.useState(false);
+            const [showLibrary, setShowLibrary] = React.useState(true);
+            const [yearFilter, setYearFilter] = React.useState('');
+            const [genreFilter, setGenreFilter] = React.useState('');
+
             React.useEffect(() => {
                 const loadAlbums = async () => {
                     const snapshot = await db.collection('albums').get();
@@ -76,15 +85,6 @@
                 await batch.commit();
                 setAlbums(newAlbums);
             };
-            const [newAlbum, setNewAlbum] = React.useState('');
-            const [newArtist, setNewArtist] = React.useState('');
-            const [selectedAlbum, setSelectedAlbum] = React.useState(null);
-            const [showUpload, setShowUpload] = React.useState(false);
-            const [showLibrary, setShowLibrary] = React.useState(true);
-            const [filterText, setFilterText] = React.useState('');
-            const [yearFilter, setYearFilter] = React.useState('');
-            const [genreFilter, setGenreFilter] = React.useState('');
-
             // Function definitions
             const addAlbum = async () => {
                 if (newAlbum && newArtist) {
