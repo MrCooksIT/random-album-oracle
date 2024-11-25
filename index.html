@@ -130,9 +130,24 @@
                     reader.readAsText(file);
                 }
             };
-
-            // Keep other existing functions (addAlbum, removeAlbum, handleListen, handleSkip, etc.)...
-
+            const pickRandomAlbum = () => {
+                if (filteredAlbums.length > 0) {
+                    const randomIndex = Math.floor(Math.random() * filteredAlbums.length);
+                    setSelectedAlbum(filteredAlbums[randomIndex]);
+                }
+            };
+            const copyToClipboard = () => {
+                if (selectedAlbum) {
+                    const textToCopy = `${selectedAlbum.album} ${selectedAlbum.artist}`;
+                    navigator.clipboard.writeText(textToCopy)
+                        .then(() => {
+                            alert('Copied to clipboard!');
+                        })
+                        .catch(() => {
+                            alert('Failed to copy');
+                        });
+                }
+            };
             return (
                 <div className="max-w-7xl mx-auto p-4 min-h-screen text-white">
                     {/* Header */}
@@ -202,7 +217,18 @@
                             {selectedAlbum && (
                                 <div className="bg-[#2a2a2a] rounded p-6 border-2 border-[#00ff00] animate-glow">
                                     <div className="text-center space-y-4">
-                                        <div className="text-[#00ff00] font-bold">NOW PLAYING</div>
+                                        <div className="text-[#00ff00] font-bold flex items-center justify-center gap-2">
+                                            NOW PLAYING
+                                            <button
+                                                onClick={copyToClipboard}
+                                                className="hover:text-white"
+                                                title="Copy to clipboard"
+                                            >
+                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                                                </svg>
+                                            </button>
+                                        </div>
                                         <h3 className="text-2xl font-bold">{selectedAlbum.album}</h3>
                                         <p className="text-lg text-gray-400">{selectedAlbum.artist}</p>
                                         <div className="flex gap-4">
