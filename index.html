@@ -27,6 +27,22 @@
         .hover-scale:hover {
             transform: scale(1.02);
         }
+
+        /* Force dark theme on inputs and their options */
+        input,
+        datalist,
+        option {
+            background-color: #27272a !important;
+            color: white !important;
+        }
+
+        input:-webkit-autofill,
+        input:-webkit-autofill:hover,
+        input:-webkit-autofill:focus {
+            -webkit-text-fill-color: white;
+            -webkit-box-shadow: 0 0 0px 1000px #27272a inset;
+            transition: background-color 5000s ease-in-out 0s;
+        }
     </style>
 </head>
 
@@ -56,13 +72,64 @@
             const [showLibrary, setShowLibrary] = React.useState(true);
             const [yearFilter, setYearFilter] = React.useState('');
             const [genreFilter, setGenreFilter] = React.useState('');
+            const normalizeYear = (year) => {
+                if (!year || year === 'Unknown') return 'Unknown';
+                const numYear = parseInt(year);
+                if (isNaN(numYear)) return 'Unknown';
+                if (numYear < 1970) return 'Pre-70s';
+                if (numYear < 1980) return "70's";
+                if (numYear < 1990) return "80's";
+                if (numYear < 2000) return "90's";
+                return year; // Keep actual year for 2000+
+            };
+            const normalizeGenre = (genre) => {
+                if (!genre || genre === 'Unknown') return 'Unknown';
+
+                // Convert to lowercase for comparison
+                const genreLower = genre.toLowerCase().trim();
+
+                // Genre mapping
+                const genreMap = {
+                    // Hip-Hop grouping
+                    'hip-hop': 'Hip-Hop',
+                    'hip hop': 'Hip-Hop',
+                    'rap': 'Hip-Hop',
+                    'alternative rap': 'Hip-Hop',
+                    'gangsta rap': 'Hip-Hop',
+
+                    // Rock grouping
+                    'rock': 'Rock',
+                    'alternative rock': 'Rock',
+                    'hard rock': 'Rock',
+                    'indie rock': 'Rock',
+                    'progressive rock': 'Rock',
+
+                    // Electronic grouping
+                    'electronic': 'Electronic',
+                    'edm': 'Electronic',
+                    'house': 'Electronic',
+                    'techno': 'Electronic',
+                    'dance': 'Electronic',
+
+                    // Add more genre mappings as needed
+                };
+
+                return genreMap[genreLower] || genre; // Return mapped genre or original if no mapping exists
+            };
             const filteredAlbums = React.useMemo(() => {
                 return albums.filter(album => {
-                    const matchesYear = !yearFilter || album.year === yearFilter;
-                    const matchesGenre = !genreFilter || album.genre === genreFilter;
+                    const normalizedYear = normalizeYear(album.year);
+                    const normalizedGenre = normalizeGenre(album.genre);
+
+                    const matchesYear = !yearFilter || yearFilter === 'All Years' || normalizedYear === yearFilter;
+                    const matchesGenre = !genreFilter || genreFilter === 'All Genres' || normalizedGenre === genreFilter;
+
                     return matchesYear && matchesGenre;
                 });
             }, [albums, yearFilter, genreFilter]);
+
+
+
             React.useEffect(() => {
                 const loadAlbums = async () => {
                     try {
@@ -79,6 +146,23 @@
                 };
                 loadAlbums();
             }, []);
+
+            const yearOptions = React.useMemo(() => {
+                const allYears = new Set(albums.map(a => normalizeYear(a.year)));
+                const decades = ["Pre-70s", "70's", "80's", "90's"];
+                const modernYears = Array.from(allYears)
+                    .filter(year => !decades.includes(year) && year !== 'Unknown' && parseInt(year) >= 2000)
+                    .sort();
+
+                return ['All Years', ...decades, ...modernYears, 'Unknown'];
+            }, [albums]);
+
+            const genreOptions = React.useMemo(() => {
+                const normalizedGenres = new Set(albums.map(a => normalizeGenre(a.genre)));
+                return ['All Genres', ...Array.from(normalizedGenres).sort()];
+            }, [albums]);
+
+
             const saveAlbums = async (newAlbums) => {
                 // Clear existing albums
                 const batch = db.batch();
@@ -262,12 +346,12 @@
                                         value={yearFilter}
                                         onChange={(e) => setYearFilter(e.target.value)}
                                         placeholder="Filter by year..."
-                                        className="flex-1 px-4 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-white placeholder-zinc-400 w-full"
+                                        className="w-full px-4 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-white placeholder-zinc-400 focus:border-zinc-500 focus:outline-none"
                                         list="year-options"
+                                        style={{ colorScheme: 'dark' }}
                                     />
                                     <datalist id="year-options">
-                                        <option value="">All Years</option>
-                                        {years.map(year => (
+                                        {yearOptions.map(year => (
                                             <option key={year} value={year}>{year}</option>
                                         ))}
                                     </datalist>
@@ -279,12 +363,12 @@
                                         value={genreFilter}
                                         onChange={(e) => setGenreFilter(e.target.value)}
                                         placeholder="Filter by genre..."
-                                        className="w-full px-4 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-white placeholder-zinc-400"
+                                        className="w-full px-4 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-white placeholder-zinc-400 focus:border-zinc-500 focus:outline-none"
                                         list="genre-options"
+                                        style={{ colorScheme: 'dark' }}
                                     />
                                     <datalist id="genre-options">
-                                        <option value="">All Genres</option>
-                                        {genres.map(genre => (
+                                        {genreOptions.map(genre => (
                                             <option key={genre} value={genre}>{genre}</option>
                                         ))}
                                     </datalist>
