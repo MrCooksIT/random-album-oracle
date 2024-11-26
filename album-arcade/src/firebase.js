@@ -2,13 +2,12 @@ import { initializeApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 
 const firebaseConfig = {
-    apiKey: "AIzaSyBrPXYMcx2zGJ0H_pLgDTZbPoftSzaBLr8",
-    authDomain: "albumarcade-7040d.firebaseapp.com",
-    projectId: "albumarcade-7040d",
-    storageBucket: "albumarcade-7040d.firebasestorage.app",
-    messagingSenderId: "589208026375",
-    appId: "1:589208026375:web:0f0026b4e36029042999a2",
-    measurementId: "G-7D463GS494"
+    apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+    authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+    projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+    storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+    appId: import.meta.env.VITE_FIREBASE_APP_ID
 };
 
 const app = initializeApp(firebaseConfig);
