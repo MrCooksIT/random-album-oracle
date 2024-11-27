@@ -347,6 +347,7 @@ function App() {
                                     onChange={handleFileUpload}
                                     className="w-full p-2 bg-zinc-800/50 rounded-lg border border-zinc-700/50 text-sm"
                                 />
+                                
                                 <p className="text-xs text-zinc-500">
                                     Import your iTunes library.xml file
                                 </p>
