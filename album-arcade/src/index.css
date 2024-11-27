@@ -2,39 +2,3 @@
 @import 'tailwindcss/base';
 @import 'tailwindcss/components';
 @import 'tailwindcss/utilities';
-
-:root {
-  --neon-glow: 0 0 10px rgba(0, 255, 255, 0.2);
-}
-
-.glow-effect {
-  box-shadow: var(--neon-glow);
-  transition: all 0.3s ease;
-}
-
-.glow-effect:hover {
-  box-shadow: 0 0 20px rgba(0, 255, 255, 0.4);
-}
-
-/* Custom scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: #1a1a1a;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #333;
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #444;
-}
-
-/* Smooth transitions */
-.transition-all {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}

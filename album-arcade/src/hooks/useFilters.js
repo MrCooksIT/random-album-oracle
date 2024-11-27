@@ -1,7 +1,6 @@
 // src/hooks/useFilters.js
 import { useMemo } from 'react';
-import { normalizeYear } from '../utils/yearGrouper';
-import { normalizeGenre } from '../utils/genreNormalizer';
+import { normalizeYear, normalizeGenre } from '../utils/normalizers'; 
 
 export const useFilters = (albums, yearFilter, genreFilter) => {
     return useMemo(() => {

@@ -1,4 +1,4 @@
-// src/utils/normalizers.js
+
 export const normalizeYear = (year) => {
     if (!year || year === 'Unknown') return 'Unknown';
     const numYear = parseInt(year);
@@ -7,14 +7,14 @@ export const normalizeYear = (year) => {
     if (numYear < 1980) return "70's";
     if (numYear < 1990) return "80's";
     if (numYear < 2000) return "90's";
-    return year.toString();
+    return year.toString(); // Keep actual year for 2000+
 };
 
 export const normalizeGenre = (genre) => {
     if (!genre || genre === 'Unknown') return 'Unknown';
     const genreLower = genre.toLowerCase().trim();
 
-    // Expand this mapping based on your library
+    // Main genre groupings
     const genreMap = {
         // Hip-Hop family
         'hip-hop': 'Hip-Hop',
@@ -28,12 +28,15 @@ export const normalizeGenre = (genre) => {
         'alternative rock': 'Rock',
         'indie rock': 'Rock',
         'hard rock': 'Rock',
+        'prog rock': 'Rock',
 
         // Electronic family
         'electronic': 'Electronic',
         'edm': 'Electronic',
         'house': 'Electronic',
         'techno': 'Electronic',
+
+        // Add more mappings
     };
 
     return genreMap[genreLower] || genre;
