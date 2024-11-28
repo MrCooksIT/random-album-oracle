@@ -9,9 +9,9 @@ import { collection, getDocs, updateDoc, doc, addDoc } from 'firebase/firestore'
 import { FilterSection } from './components/FilterSection';
 import { useFilters } from './hooks/useFilters';
 import { normalizeYear, normalizeGenre } from './utils/normalizers';
-
+import { Library } from './components/Library';
 function App() {
-
+    const [showLibrary, setShowLibrary] = useState(false);
     const [user, loading] = useAuthState(auth);
     const [albums, setAlbums] = useState([]);
     const [selectedAlbum, setSelectedAlbum] = useState(null);
@@ -21,6 +21,7 @@ function App() {
     const [genreFilter, setGenreFilter] = useState('');
     const [showUpload, setShowUpload] = useState(false);
     const availableYears = useMemo(() => {
+        ``
         if (!albums.length) return ['All Years'];
         const years = new Set(albums.map(a => normalizeYear(a.year)));
         return ['All Years', ...Array.from(years)].filter(y => y !== 'Unknown');
@@ -288,13 +289,22 @@ function App() {
                             </motion.div>
                             Album Arcade
                         </h1>
-                        <button
-                            onClick={() => auth.signOut()}
-                            className="px-4 py-2 bg-zinc-800/50 rounded-lg hover:bg-zinc-700/50 transition-all
-                     border border-zinc-700/50 hover:border-zinc-600/50 text-sm"
-                        >
-                            Sign Out
-                        </button>
+                        <div className="flex gap-2">
+                            <button
+                                onClick={() => setShowLibrary(!showLibrary)}
+                                className="px-4 py-2 bg-zinc-800/50 rounded-lg hover:bg-zinc-700/50 transition-all
+                                     border border-zinc-700/50 hover:border-zinc-600/50 text-sm"
+                            >
+                                {showLibrary ? 'Hide Library' : 'Show Library'}
+                            </button>
+                            <button
+                                onClick={() => auth.signOut()}
+                                className="px-4 py-2 bg-zinc-800/50 rounded-lg hover:bg-zinc-700/50 transition-all
+                                     border border-zinc-700/50 hover:border-zinc-600/50 text-sm"
+                            >
+                                Sign Out
+                            </button>
+                        </div>
                     </div>
                 </motion.div>
 
@@ -308,7 +318,7 @@ function App() {
                     </div>
                 )}
                 <div className="space-y-4 mb-6">
-                    
+
                     <FilterSection
                         yearFilter={yearFilter}
                         genreFilter={genreFilter}
@@ -318,9 +328,9 @@ function App() {
                         availableGenres={availableGenres}
                         showFilters={showFilters}
                         onToggleFilters={() => setShowFilters(!showFilters)}
-                        
+
                     />
-                    
+
                     <RandomPicker
                         filteredAlbums={filteredAlbums}
                         selectedAlbum={selectedAlbum}
@@ -347,7 +357,7 @@ function App() {
                                     onChange={handleFileUpload}
                                     className="w-full p-2 bg-zinc-800/50 rounded-lg border border-zinc-700/50 text-sm"
                                 />
-                                
+
                                 <p className="text-xs text-zinc-500">
                                     Import your iTunes library.xml file
                                 </p>
@@ -386,6 +396,20 @@ function App() {
                             </div>
                         )}
                     </div>
+                    {showLibrary && (
+                        <Library
+                            albums={filteredAlbums}
+                            onRemove={async (id) => {
+                                try {
+                                    await doc(db, 'albums', id).delete();
+                                    setAlbums(albums.filter(a => a.id !== id));
+                                } catch (err) {
+                                    setError('Failed to remove album');
+                                }
+                            }}
+                            loading={loading}
+                        />
+                    )}
                 </div>
             </div>
         </div>
