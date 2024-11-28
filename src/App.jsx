@@ -308,18 +308,6 @@ function App() {
                     </div>
                 )}
                 <div className="space-y-4 mb-6">
-                    <FilterSection
-                        yearFilter={yearFilter}
-                        genreFilter={genreFilter}
-                        onYearChange={setYearFilter}
-                        onGenreChange={setGenreFilter}
-                        availableYears={availableYears}
-                        availableGenres={availableGenres}
-                        showFilters={showFilters}
-                        onToggleFilters={() => setShowFilters(!showFilters)}
-                    />
-
-
                     <svg
                         className={`w-4 h-4 ${showFilters ? 'rotate-180' : ''}`}
                         viewBox="0 0 24 24"
@@ -333,6 +321,19 @@ function App() {
                             d="M12 4v16m8-8H4"
                         />
                     </svg>
+                    <FilterSection
+                        yearFilter={yearFilter}
+                        genreFilter={genreFilter}
+                        onYearChange={setYearFilter}
+                        onGenreChange={setGenreFilter}
+                        availableYears={availableYears}
+                        availableGenres={availableGenres}
+                        showFilters={showFilters}
+                        onToggleFilters={() => setShowFilters(!showFilters)}
+                    />
+
+
+
                     <RandomPicker
                         filteredAlbums={filteredAlbums}
                         selectedAlbum={selectedAlbum}
