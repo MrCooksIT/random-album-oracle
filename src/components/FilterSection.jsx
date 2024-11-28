@@ -26,8 +26,24 @@ export const FilterSection = ({
             <button
                 onClick={onToggleFilters}
                 className="flex items-center gap-2 text-zinc-400 hover:text-white w-full justify-between"
-            >
-                <span>Filters</span>
+            >   <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-2">
+                        <svg
+                            className="w-4 h-4"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M12 4v16m8-8H4"
+                            />
+                        </svg>
+                        <span>Filters</span>
+                    </div>
+                </div>
                 <motion.svg
                     animate={{ rotate: showFilters ? 180 : 0 }}
                     className="w-4 h-4"
@@ -35,7 +51,7 @@ export const FilterSection = ({
                     fill="none"
                     stroke="currentColor"
                 >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+
                 </motion.svg>
             </button>
 
