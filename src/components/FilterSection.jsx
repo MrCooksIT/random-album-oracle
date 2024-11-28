@@ -10,6 +10,17 @@ export const FilterSection = ({
     showFilters,
     onToggleFilters
 }) => {
+    const sortedYears = [...availableYears].sort((a, b) => {
+        const decades = ["All Years", "Pre-70s", "70's", "80's", "90's"];
+        if (decades.includes(a) && decades.includes(b)) {
+            return decades.indexOf(a) - decades.indexOf(b);
+        }
+        if (decades.includes(a)) return -1;
+        if (decades.includes(b)) return 1;
+        if (a === "Unknown") return 1;
+        if (b === "Unknown") return -1;
+        return parseInt(a) - parseInt(b);
+    });
     return (
         <div className="mb-6 bg-black/30 rounded-lg p-4 border border-zinc-800/50">
             <button
@@ -49,12 +60,12 @@ export const FilterSection = ({
                                     list="year-options"
                                 />
                                 <datalist id="year-options">
-                                    {availableYears.map(year => (
+                                    {sortedYears.map(year => (
                                         <option key={year} value={year}>{year}</option>
                                     ))}
                                 </datalist>
                             </div>
-                            
+
                             <div className="space-y-2">
                                 <label className="text-sm text-zinc-500">Vibe</label>
                                 <select
