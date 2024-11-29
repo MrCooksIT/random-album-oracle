@@ -5,14 +5,16 @@ import Auth from './components/Auth.jsx';
 import { auth, db } from './firebase.js';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { motion } from 'framer-motion';
-import { collection, getDocs, updateDoc, doc, addDoc } from 'firebase/firestore';
+import { collection, getDocs, updateDoc, doc, addDoc, writeBatch } from 'firebase/firestore';
 import { FilterSection } from './components/FilterSection';
 import { useFilters } from './hooks/useFilters';
 import { normalizeYear, normalizeGenre } from './utils/normalizers';
 import { Library } from './components/Library';
 function App() {
+    const [loading, setLoading] = useState(false);
+    const [selectedFile, setSelectedFile] = useState(null)
     const [showLibrary, setShowLibrary] = useState(false);
-    const [user, loading] = useAuthState(auth);
+    const [user] = useAuthState(auth);
     const [albums, setAlbums] = useState([]);
     const [selectedAlbum, setSelectedAlbum] = useState(null);
     const [error, setError] = useState(null);
@@ -59,70 +61,108 @@ function App() {
             setSelectedAlbum(albums[randomIndex]);
         }
     };
-    const handleFileUpload = async (event) => {
-        const file = event.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = async (e) => {
-                try {
-                    const parser = new DOMParser();
-                    const xml = parser.parseFromString(e.target.result, "text/xml");
-                    const tracks = xml.getElementsByTagName("dict")[0].getElementsByTagName("dict");
-                    const newAlbums = new Set();
+    const handleFileUpload = async () => {
+        if (!selectedFile) {
+            setError('Please select a file first');
+            return;
+        }
 
-                    for (let track of tracks) {
-                        const keys = track.getElementsByTagName("key");
-                        let albumData = {
-                            album: "",
-                            artist: "",
-                            year: "Unknown",
-                            genre: "Unknown",
+        const BATCH_SIZE = 400; // Stay under Firebase's 500 limit
+
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            try {
+                setLoading(true);
+                const parser = new DOMParser();
+                const xml = parser.parseFromString(e.target.result, "text/xml");
+                const tracks = xml.getElementsByTagName("dict")[0].getElementsByTagName("dict");
+                const newAlbums = new Set();
+
+                for (let track of tracks) {
+                    const keys = track.getElementsByTagName("key");
+                    let albumData = {
+                        album: "",
+                        artist: "",
+                        year: "",
+                        genre: "",
+                        trackCount: 0,
+                        isPodcast: false,
+                        isSingle: false
+                    };
+
+                    for (let i = 0; i < keys.length; i++) {
+                        const key = keys[i].textContent;
+                        const value = keys[i].nextElementSibling?.textContent;
+
+                        switch (key) {
+                            case "Album": albumData.album = value; break;
+                            case "Artist": albumData.artist = value; break;
+                            case "Year": albumData.year = value; break;
+                            case "Genre": albumData.genre = value; break;
+                            case "Track Count": albumData.trackCount = parseInt(value) || 0; break;
+                            case "Podcast": albumData.isPodcast = true; break;
+                        }
+                    }
+
+                    albumData.isSingle = albumData.album.toLowerCase().includes(" - single") ||
+                        albumData.album.toLowerCase().includes(" single") ||
+                        albumData.trackCount === 1;
+
+                    if (!albumData.isPodcast && !albumData.isSingle &&
+                        albumData.album && albumData.artist) {
+                        newAlbums.add(JSON.stringify({
+                            album: albumData.album,
+                            artist: albumData.artist,
+                            year: albumData.year || 'Unknown',
+                            genre: albumData.genre || 'Unknown',
                             listens: 0,
                             skips: 0
-                        };
-
-                        for (let i = 0; i < keys.length; i++) {
-                            switch (keys[i].textContent) {
-                                case "Album":
-                                    albumData.album = keys[i].nextElementSibling.textContent;
-                                    break;
-                                case "Artist":
-                                    albumData.artist = keys[i].nextElementSibling.textContent;
-                                    break;
-                                case "Year":
-                                    albumData.year = keys[i].nextElementSibling.textContent;
-                                    break;
-                                case "Genre":
-                                    albumData.genre = keys[i].nextElementSibling.textContent;
-                                    break;
-                            }
-                        }
-
-                        if (albumData.album && albumData.artist) {
-                            newAlbums.add(JSON.stringify(albumData));
-                        }
+                        }));
                     }
-
-                    const albumsRef = collection(db, 'albums');
-                    for (const albumJson of newAlbums) {
-                        await addDoc(albumsRef, JSON.parse(albumJson));
-                    }
-
-                    // Refresh albums list
-                    const snapshot = await getDocs(albumsRef);
-                    setAlbums(snapshot.docs.map(doc => ({
-                        id: doc.id,
-                        ...doc.data()
-                    })));
-
-                    setError(null);
-                } catch (err) {
-                    setError('Failed to import albums');
                 }
-            };
-            reader.readAsText(file);
-        }
+
+
+                const albumsArray = Array.from(newAlbums).map(item => JSON.parse(item));
+
+                // Delete existing albums
+                const existingAlbums = await getDocs(collection(db, 'albums'));
+                const deleteBatch = writeBatch(db);
+                existingAlbums.docs.forEach(doc => {
+                    deleteBatch.delete(doc.ref);
+                });
+                await deleteBatch.commit();
+
+                // Upload in chunks
+                for (let i = 0; i < albumsArray.length; i += BATCH_SIZE) {
+                    const chunk = albumsArray.slice(i, i + BATCH_SIZE);
+                    const batch = writeBatch(db);
+
+                    chunk.forEach(album => {
+                        const ref = doc(collection(db, 'albums'));
+                        batch.set(ref, album);
+                    });
+
+                    await batch.commit();
+                }
+
+                const snapshot = await getDocs(collection(db, 'albums'));
+                setAlbums(snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                })));
+                setSelectedFile(null);
+                setLoading(false);
+
+                alert(`Successfully imported ${albumsArray.length} albums!`);
+            } catch (error) {
+                console.error('Error importing:', error);
+                setError('Failed to import albums');
+                setLoading(false);
+            }
+        };
+        reader.readAsText(selectedFile);
     };
+
 
     const handleManualAdd = async (e) => {
         e.preventDefault();
@@ -354,14 +394,21 @@ function App() {
                                 <input
                                     type="file"
                                     accept=".xml"
-                                    onChange={handleFileUpload}
+                                    onChange={(e) => setSelectedFile(e.target.files[0])}
                                     className="w-full p-2 bg-zinc-800/50 rounded-lg border border-zinc-700/50 text-sm"
                                 />
-
+                                <button
+                                    onClick={handleFileUpload}
+                                    disabled={!selectedFile}
+                                    className="w-full py-2 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-lg
+                hover:from-blue-500 hover:to-cyan-500 transition-all text-sm
+                disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    Upload Library
+                                </button>
                                 <p className="text-xs text-zinc-500">
                                     Import your iTunes library.xml file
                                 </p>
-
                                 {/* Manual album entry */}
                                 <form onSubmit={handleManualAdd} className="space-y-2">
                                     <input
@@ -412,7 +459,7 @@ function App() {
                     )}
                 </div>
             </div>
-        </div>
+        </div >
     );
 
 }
