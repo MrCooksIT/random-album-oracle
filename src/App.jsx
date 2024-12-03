@@ -76,7 +76,7 @@ function App() {
                 const parser = new DOMParser();
                 const xml = parser.parseFromString(e.target.result, "text/xml");
                 const tracks = xml.getElementsByTagName("dict")[0].getElementsByTagName("dict");
-                const newAlbums = new Set();
+                const albumGroups = new Map();
 
                 for (let track of tracks) {
                     const keys = track.getElementsByTagName("key");
@@ -90,6 +90,7 @@ function App() {
                         isSingle: false
                     };
 
+
                     for (let i = 0; i < keys.length; i++) {
                         const key = keys[i].textContent;
                         const value = keys[i].nextElementSibling?.textContent;
@@ -102,22 +103,18 @@ function App() {
                             case "Track Count": albumData.trackCount = parseInt(value) || 0; break;
                             case "Podcast": albumData.isPodcast = true; break;
                         }
-                    }
-
+                    } z
                     albumData.isSingle = albumData.album.toLowerCase().includes(" - single") ||
                         albumData.album.toLowerCase().includes(" single") ||
                         albumData.trackCount === 1;
 
-                    if (!albumData.isPodcast && !albumData.isSingle &&
-                        albumData.album && albumData.artist) {
-                        newAlbums.add(JSON.stringify({
-                            album: albumData.album,
-                            artist: albumData.artist,
-                            year: albumData.year || 'Unknown',
-                            genre: albumData.genre || 'Unknown',
-                            listens: 0,
-                            skips: 0
-                        }));
+                    if (!albumData.isPodcast && !albumData.isSingle && albumData.album && albumData.artist) {
+                        const key = `${albumData.album}|||${albumData.artist}`;
+                        const existing = albumGroups.get(key);
+
+                        if (!existing || shouldPreferNewVersion(albumData, existing)) {
+                            albumGroups.set(key, albumData);
+                        }
                     }
                 }
 
@@ -163,7 +160,15 @@ function App() {
         reader.readAsText(selectedFile);
     };
 
+    const shouldPreferNewVersion = (newAlbum, existingAlbum) => {
+        // Prefer newer years
+        const newYear = parseInt(newAlbum.year) || 0;
+        const existingYear = parseInt(existingAlbum.year) || 0;
+        if (newYear !== existingYear) return newYear > existingYear;
 
+        // Could add more preference rules here
+        return false;
+    };
     const handleManualAdd = async (e) => {
         e.preventDefault();
         const formData = new FormData(e.target);
