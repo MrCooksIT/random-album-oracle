@@ -7,9 +7,9 @@ import { useAuthState } from 'react-firebase-hooks/auth';
 import { motion } from 'framer-motion';
 import { collection, getDocs, updateDoc, doc, addDoc, writeBatch } from 'firebase/firestore';
 import { FilterSection } from './components/FilterSection';
-import { useFilters } from './hooks/useFilters';
-import { normalizeYear, normalizeGenre } from './utils/normalizers';
 import { Library } from './components/Library';
+import { normalizeYear, normalizeGenre, ALL_VIBES } from './utils/normalizers';
+
 function App() {
     const [loading, setLoading] = useState(false);
     const [selectedFile, setSelectedFile] = useState(null)
@@ -30,12 +30,25 @@ function App() {
     }, [albums]);
 
     const availableGenres = useMemo(() => {
-        if (!albums.length) return ['All Genres'];
+        if (!albums.length) return ['All Genres'];  // Changed from ALL_VIBES
         const genres = new Set(albums.map(a => normalizeGenre(a.genre)));
         return ['All Genres', ...Array.from(genres)].filter(g => g !== 'Unknown');
     }, [albums]);
 
-    const filteredAlbums = useFilters(albums, yearFilter, genreFilter);
+    const filteredAlbums = useMemo(() => {
+        return albums.filter(album => {
+            const normalizedGenre = normalizeGenre(album.genre);
+            const matchesYear = !yearFilter || yearFilter === 'All Years' || normalizeYear(album.year) === yearFilter;
+            const matchesGenre = !genreFilter || genreFilter === 'All Genres' || normalizedGenre === genreFilter;
+            console.log({
+                originalGenre: album.genre,
+                normalizedGenre,
+                filterGenre: genreFilter,
+                matches: matchesGenre
+            });
+            return matchesYear && matchesGenre;
+        });
+    }, [albums, yearFilter, genreFilter]);
 
     React.useEffect(() => {
         if (user) {
@@ -56,9 +69,13 @@ function App() {
         }
     }, [user]);
     const handlePickRandom = () => {
-        if (albums.length > 0) {
-            const randomIndex = Math.floor(Math.random() * albums.length);
-            setSelectedAlbum(albums[randomIndex]);
+        if (filteredAlbums.length > 0) {
+            const filteredAndNormalized = filteredAlbums.map(album => ({
+                ...album,
+                genre: normalizeGenre(album.genre)
+            }));
+            const randomIndex = Math.floor(Math.random() * filteredAndNormalized.length);
+            setSelectedAlbum(filteredAndNormalized[randomIndex]);
         }
     };
     const handleFileUpload = async () => {

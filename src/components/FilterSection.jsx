@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { ALL_VIBES } from '../utils/genres';
+import { normalizeGenre, ALL_VIBES } from '../utils/normalizers';
 
 export const FilterSection = ({
     yearFilter,
@@ -10,6 +10,7 @@ export const FilterSection = ({
     showFilters,
     onToggleFilters
 }) => {
+    const sortedVibes = ALL_VIBES.filter(vibe => vibe !== 'Unknown');
     const sortedYears = [...availableYears].sort((a, b) => {
         const decades = ["All Years", "Pre-70s", "70's", "80's", "90's"];
         if (decades.includes(a) && decades.includes(b)) {
@@ -83,14 +84,14 @@ export const FilterSection = ({
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-sm text-zinc-500">Vibe</label>
+                                <label className="text-sm text-zinc-500">Genre</label>
                                 <select
                                     value={genreFilter}
                                     onChange={(e) => onGenreChange(e.target.value)}
                                     className="w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg 
-                                             text-white"
+                         text-white"
                                 >
-                                    {ALL_VIBES.map(vibe => (
+                                    {sortedVibes.map(vibe => (
                                         <option key={vibe} value={vibe}>{vibe}</option>
                                     ))}
                                 </select>
