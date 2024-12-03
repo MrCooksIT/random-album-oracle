@@ -70,12 +70,14 @@ function App() {
     }, [user]);
     const handlePickRandom = () => {
         if (filteredAlbums.length > 0) {
-            const filteredAndNormalized = filteredAlbums.map(album => ({
-                ...album,
-                genre: normalizeGenre(album.genre)
-            }));
-            const randomIndex = Math.floor(Math.random() * filteredAndNormalized.length);
-            setSelectedAlbum(filteredAndNormalized[randomIndex]);
+            const randomIndex = Math.floor(Math.random() * filteredAlbums.length);
+            const album = filteredAlbums[randomIndex];
+            console.log({
+                original: album.genre,
+                normalized: normalizeGenre(album.genre),
+                filter: genreFilter
+            });
+            setSelectedAlbum(album);
         }
     };
     const handleFileUpload = async () => {
@@ -131,10 +133,19 @@ function App() {
 
                         if (!existing || shouldPreferNewVersion(albumData, existing)) {
                             albumGroups.set(key, albumData);
+                            const isLikelyUserAlbum =
+                                !albumData.album.toLowerCase().includes('preview') &&
+                                !albumData.album.toLowerCase().includes('sample') &&
+                                !albumData.album.toLowerCase().includes('various artists') &&
+                                albumData.trackCount > 1;  // Skip singles
+
+                            if (isLikelyUserAlbum) {
+                                const key = `${albumData.album}|||${albumData.artist}`;
+                                albumGroups.set(key, albumData);
+                            }
                         }
                     }
                 }
-
 
                 const albumsArray = Array.from(newAlbums).map(item => JSON.parse(item));
 
@@ -214,6 +225,15 @@ function App() {
         } catch (err) {
             setError('Failed to add album');
         }
+    };
+    const resetLibrary = async () => {
+        const batch = writeBatch(db);
+        const existingAlbums = await getDocs(collection(db, 'albums'));
+        existingAlbums.docs.forEach(doc => {
+            batch.delete(doc.ref);
+        });
+        await batch.commit();
+        setAlbums([]);
     };
     const handleListen = async (album) => {
         try {
@@ -413,6 +433,30 @@ function App() {
 
                         {showUpload && (
                             <div className="mt-4 space-y-4">
+                                <button
+                                    onClick={async () => {
+                                        if (window.confirm('Are you sure you want to delete all albums? This cannot be undone.')) {
+                                            setLoading(true);
+                                            try {
+                                                const batch = writeBatch(db);
+                                                const existingAlbums = await getDocs(collection(db, 'albums'));
+                                                existingAlbums.docs.forEach(doc => {
+                                                    batch.delete(doc.ref);
+                                                });
+                                                await batch.commit();
+                                                setAlbums([]);
+                                                setError(null);
+                                            } catch (err) {
+                                                setError('Failed to reset library');
+                                            }
+                                            setLoading(false);
+                                        }
+                                    }}
+                                    className="w-full py-2 bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 
+               rounded-lg text-red-400 text-sm"
+                                >
+                                    Reset Library
+                                </button>
                                 <input
                                     type="file"
                                     accept=".xml"
