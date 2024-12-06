@@ -418,7 +418,7 @@ function App() {
                         selectedAlbum={selectedAlbum}
                         onPick={handlePickRandom}
                         onListen={handleListen}
-                        onSkip={handleSkip}
+                        setSelectedAlbum={setSelectedAlbum}
                     />
                     <div className="backdrop-blur-md bg-black/30 rounded-lg p-4 border border-zinc-800/50">
                         <button

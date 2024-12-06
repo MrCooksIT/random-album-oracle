@@ -1,12 +1,13 @@
-// src/components/RandomPicker.jsx
 import { motion, AnimatePresence } from 'framer-motion';
+import { doc, deleteDoc } from 'firebase/firestore';
+import { db } from '../firebase';
 
 export const RandomPicker = ({
     filteredAlbums,
     selectedAlbum,
     onPick,
     onListen,
-    onSkip
+    setSelectedAlbum  // Added to clear selection after remove
 }) => {
     const handleCopy = async (album) => {
         const textToCopy = `${album.artist} - ${album.album}`;
@@ -17,6 +18,14 @@ export const RandomPicker = ({
         }
     };
 
+    const handleRemove = async (album) => {
+        try {
+            await deleteDoc(doc(db, 'albums', album.id));
+            setSelectedAlbum(null); // Clear the selected album after removal
+        } catch (err) {
+            console.error('Failed to remove album:', err);
+        }
+    };
 
     return (
         <div className="space-y-6">
@@ -41,31 +50,28 @@ export const RandomPicker = ({
                              border border-zinc-700/30 backdrop-blur-md"
                     >
                         <div className="text-center space-y-4">
-                            <div className="text-cyan-400 font-medium flex items-center justify-center gap-2">
-                                Now Playing
-                                <motion.button
-                                    whileHover={{ scale: 1.1 }}
-                                    whileTap={{ scale: 0.9 }}
-                                    onClick={() => handleCopy(selectedAlbum)}
-                                    className="text-zinc-400 hover:text-cyan-400 transition-colors"
-                                    title="Copy album info"
+                            <motion.button
+                                whileHover={{ scale: 1.1 }}
+                                whileTap={{ scale: 0.9 }}
+                                onClick={() => handleCopy(selectedAlbum)}
+                                className="text-zinc-400 hover:text-cyan-400 transition-colors p-2"
+                                title="Copy album info"
+                            >
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    className="h-6 w-6"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
                                 >
-                                    <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        className="h-4 w-4"
-                                        fill="none"
-                                        viewBox="0 0 24 24"
-                                        stroke="currentColor"
-                                    >
-                                        <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            strokeWidth={2}
-                                            d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"
-                                        />
-                                    </svg>
-                                </motion.button>
-                            </div>
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"
+                                    />
+                                </svg>
+                            </motion.button>
                             <h3 className="text-2xl font-bold text-white">{selectedAlbum.album}</h3>
                             <p className="text-zinc-400">{selectedAlbum.artist}</p>
                             <p className="text-sm text-zinc-500">
@@ -84,11 +90,11 @@ export const RandomPicker = ({
                                 <motion.button
                                     whileHover={{ scale: 1.05 }}
                                     whileTap={{ scale: 0.95 }}
-                                    onClick={() => onSkip(selectedAlbum)}
+                                    onClick={() => handleRemove(selectedAlbum)}
                                     className="flex-1 py-3 bg-red-500/20 hover:bg-red-500/30
                                          border border-red-500/30 rounded-lg text-red-400"
                                 >
-                                    Skip
+                                    Remove
                                 </motion.button>
                             </div>
                         </div>
