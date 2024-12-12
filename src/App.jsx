@@ -92,62 +92,29 @@ function App() {
         reader.onload = async (e) => {
             try {
                 setLoading(true);
-                const parser = new DOMParser();
-                const xml = parser.parseFromString(e.target.result, "text/xml");
-                const tracks = xml.getElementsByTagName("dict")[0].getElementsByTagName("dict");
-                const albumGroups = new Map();
+                const text = e.target.result;
+                const rows = text.split('\n');
 
-                for (let track of tracks) {
-                    const keys = track.getElementsByTagName("key");
-                    let albumData = {
-                        album: "",
-                        artist: "",
-                        year: "",
-                        genre: "",
-                        trackCount: 0,
-                        isPodcast: false,
-                        isSingle: false
-                    };
-
-
-                    for (let i = 0; i < keys.length; i++) {
-                        const key = keys[i].textContent;
-                        const value = keys[i].nextElementSibling?.textContent;
-
-                        switch (key) {
-                            case "Album": albumData.album = value; break;
-                            case "Artist": albumData.artist = value; break;
-                            case "Year": albumData.year = value; break;
-                            case "Genre": albumData.genre = value; break;
-                            case "Track Count": albumData.trackCount = parseInt(value) || 0; break;
-                            case "Podcast": albumData.isPodcast = true; break;
-                        }
-                    } z
-                    albumData.isSingle = albumData.album.toLowerCase().includes(" - single") ||
-                        albumData.album.toLowerCase().includes(" single") ||
-                        albumData.trackCount === 1;
-
-                    if (!albumData.isPodcast && !albumData.isSingle && albumData.album && albumData.artist) {
-                        const key = `${albumData.album}|||${albumData.artist}`;
-                        const existing = albumGroups.get(key);
-
-                        if (!existing || shouldPreferNewVersion(albumData, existing)) {
-                            albumGroups.set(key, albumData);
-                            const isLikelyUserAlbum =
-                                !albumData.album.toLowerCase().includes('preview') &&
-                                !albumData.album.toLowerCase().includes('sample') &&
-                                !albumData.album.toLowerCase().includes('various artists') &&
-                                albumData.trackCount > 1;  // Skip singles
-
-                            if (isLikelyUserAlbum) {
-                                const key = `${albumData.album}|||${albumData.artist}`;
-                                albumGroups.set(key, albumData);
-                            }
-                        }
-                    }
-                }
-
-                const albumsArray = Array.from(newAlbums).map(item => JSON.parse(item));
+                // Skip header row and create album objects
+                const albums = rows.slice(1)
+                    .map(row => {
+                        const [artist, album, genre, year] = row.split(',').map(field => field.trim());
+                        return {
+                            artist,
+                            album,
+                            genre,
+                            year,
+                            listens: 0,
+                            skips: 0
+                        };
+                    })
+                    .filter(album =>
+                        album.artist &&
+                        album.album &&
+                        !album.album.toLowerCase().includes('single') &&
+                        !album.album.toLowerCase().includes('preview') &&
+                        !album.album.toLowerCase().includes('sample')
+                    );
 
                 // Delete existing albums
                 const existingAlbums = await getDocs(collection(db, 'albums'));
@@ -158,8 +125,8 @@ function App() {
                 await deleteBatch.commit();
 
                 // Upload in chunks
-                for (let i = 0; i < albumsArray.length; i += BATCH_SIZE) {
-                    const chunk = albumsArray.slice(i, i + BATCH_SIZE);
+                for (let i = 0; i < albums.length; i += BATCH_SIZE) {
+                    const chunk = albums.slice(i, i + BATCH_SIZE);
                     const batch = writeBatch(db);
 
                     chunk.forEach(album => {
@@ -175,27 +142,20 @@ function App() {
                     id: doc.id,
                     ...doc.data()
                 })));
+
                 setSelectedFile(null);
                 setLoading(false);
+                setError(null);
 
-                alert(`Successfully imported ${albumsArray.length} albums!`);
+                alert(`Successfully imported ${albums.length} albums!`);
             } catch (error) {
                 console.error('Error importing:', error);
                 setError('Failed to import albums');
                 setLoading(false);
             }
         };
+
         reader.readAsText(selectedFile);
-    };
-
-    const shouldPreferNewVersion = (newAlbum, existingAlbum) => {
-        // Prefer newer years
-        const newYear = parseInt(newAlbum.year) || 0;
-        const existingYear = parseInt(existingAlbum.year) || 0;
-        if (newYear !== existingYear) return newYear > existingYear;
-
-        // Could add more preference rules here
-        return false;
     };
     const handleManualAdd = async (e) => {
         e.preventDefault();
@@ -459,7 +419,7 @@ function App() {
                                 </button>
                                 <input
                                     type="file"
-                                    accept=".xml"
+                                    accept=".csv"
                                     onChange={(e) => setSelectedFile(e.target.files[0])}
                                     className="w-full p-2 bg-zinc-800/50 rounded-lg border border-zinc-700/50 text-sm"
                                 />
@@ -473,7 +433,7 @@ function App() {
                                     Upload Library
                                 </button>
                                 <p className="text-xs text-zinc-500">
-                                    Import your iTunes library.xml file
+                                    Import your iTunes library file
                                 </p>
                                 {/* Manual album entry */}
                                 <form onSubmit={handleManualAdd} className="space-y-2">
