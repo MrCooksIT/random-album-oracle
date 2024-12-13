@@ -1,4 +1,9 @@
+
 /* src/index.css */
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
 body {
     margin: 0;
     padding: 0;
@@ -16,6 +21,7 @@ body {
     min-height: -webkit-fill-available;
     background: #000;
   }
+
   html {
     -webkit-tap-highlight-color: transparent;
     scroll-behavior: smooth;
@@ -25,7 +31,4 @@ body {
       background-attachment: scroll;
     }
   }
-@import 'tailwindcss/base';
-@import 'tailwindcss/components';
-@import 'tailwindcss/utilities';
 
