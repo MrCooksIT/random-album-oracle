@@ -79,6 +79,14 @@ export const FilterSection = ({
                                     className="w-full px-3 py-2 bg-zinc-800/75 border border-zinc-700/75 rounded-lg 
                                              text-white text-sm appearance-none hover:border-zinc-600
                                              focus:outline-none focus:border-cyan-500/50"
+                                    style={{
+                                        WebkitAppearance: 'none',
+                                        backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
+                                        backgroundRepeat: 'no-repeat',
+                                        backgroundPosition: 'right 0.5rem center',
+                                        backgroundSize: '1.5em 1.5em',
+                                        paddingRight: '2.5rem'
+                                    }}
                                 >
                                     {sortedYears.map(year => (
                                         <option key={year} value={year}>{year}</option>
@@ -94,6 +102,14 @@ export const FilterSection = ({
                                     className="w-full px-3 py-2 bg-zinc-800/75 border border-zinc-700/75 rounded-lg 
                                              text-white text-sm appearance-none hover:border-zinc-600
                                              focus:outline-none focus:border-cyan-500/50"
+                                    style={{
+                                        WebkitAppearance: 'none',
+                                        backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
+                                        backgroundRepeat: 'no-repeat',
+                                        backgroundPosition: 'right 0.5rem center',
+                                        backgroundSize: '1.5em 1.5em',
+                                        paddingRight: '2.5rem'
+                                    }}
                                 >
                                     {sortedVibes.map(vibe => (
                                         <option key={vibe} value={vibe}>{vibe}</option>

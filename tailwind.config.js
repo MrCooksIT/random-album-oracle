@@ -8,11 +8,6 @@ export default {
     extend: {},
   },
   plugins: [],
-}
-module.exports = {
-  content: [
-    "./src/**/*.{js,jsx,ts,tsx}",
-  ],
   safelist: [
     'auth-screen',
     'crt-scanlines',

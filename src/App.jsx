@@ -238,16 +238,16 @@ function App() {
     }
 
     return (
-
-        <div className="min-h-screen bg-gradient-to-b from-black to-zinc-900 text-white p-4">
-            <div className="max-w-2xl mx-auto">
+        <div className="min-h-screen bg-gradient-to-b from-black via-zinc-900 to-black text-white antialiased">
+            <div className="max-w-md mx-auto px-4 py-6">
                 <motion.div
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="backdrop-blur-md bg-black/30 rounded-lg p-6 mb-6"
+                    className="backdrop-blur-lg bg-black/40 rounded-2xl p-4 mb-4 shadow-xl
+                         border border-zinc-800/50"
                 >
-                    <div className="flex justify-between items-center">
-                        <h1 className="text-4xl font-bold bg-gradient-to-r from-cyan-400 to-blue-400 text-transparent bg-clip-text flex items-center gap-4">
+                    <div className="flex justify-between items-center flex-wrap gap-4">
+                        <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-cyan-400 to-blue-400 text-transparent bg-clip-text flex items-center gap-4">
                             <motion.div
                                 whileHover={{ scale: 1.1 }}
                                 className="relative"
@@ -266,16 +266,15 @@ function App() {
                                         rotate: { duration: 3, repeat: Infinity, ease: "linear" },
                                         boxShadow: { duration: 2, repeat: Infinity, ease: "easeInOut" }
                                     }}
-                                    className="w-12 h-12 rounded-full absolute inset-0"
+                                    className="w-16 h-16 sm:w-20 sm:h-20 rounded-full absolute inset-0"
                                 />
-
                                 {/* Main CD */}
                                 <motion.div
                                     animate={{ rotate: 360 }}
                                     transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-                                    className="w-12 h-12 relative"
+                                    className="w-16 h-16 sm:w-20 sm:h-20 relative"
                                 >
-                                    <svg viewBox="0 0 24 24" className="text-cyan-400">
+                                    <svg viewBox="0 0 24 24" className="text-cyan-400 w-full h-full">
                                         {/* Outer ring */}
                                         <circle cx="12" cy="12" r="11" fill="currentColor" opacity="0.1" />
                                         <circle cx="12" cy="12" r="11" fill="none" stroke="currentColor" strokeWidth="0.5" />
@@ -329,57 +328,57 @@ function App() {
                                     }}
                                 />
                             </motion.div>
-                            Album Arcade
+                            <span className="whitespace-nowrap">Album Arcade</span>
                         </h1>
                         <div className="flex gap-2">
                             <button
                                 onClick={() => setShowLibrary(!showLibrary)}
-                                className="px-4 py-2 bg-zinc-800/50 rounded-lg hover:bg-zinc-700/50 transition-all
-                                     border border-zinc-700/50 hover:border-zinc-600/50 text-sm"
+                                className="px-3 py-1.5 bg-zinc-800/80 rounded-lg hover:bg-zinc-700/80 
+                                         transition-all text-sm font-medium text-zinc-200
+                                         active:scale-95 shadow-lg border border-zinc-700/50"
                             >
-                                {showLibrary ? 'Hide Library' : 'Show Library'}
+                                {showLibrary ? 'Hide' : 'Show'} Library
                             </button>
                             <button
                                 onClick={() => auth.signOut()}
-                                className="px-4 py-2 bg-zinc-800/50 rounded-lg hover:bg-zinc-700/50 transition-all
-                                     border border-zinc-700/50 hover:border-zinc-600/50 text-sm"
+                                className="px-3 py-1.5 bg-zinc-800/80 rounded-lg hover:bg-zinc-700/80 
+                                         transition-all text-sm font-medium text-zinc-200
+                                         active:scale-95 shadow-lg border border-zinc-700/50"
                             >
                                 Sign Out
                             </button>
                         </div>
                     </div>
                 </motion.div>
-
                 {error && (
                     <div className="mb-4 p-4 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400">
                         {error}
                     </div>
                 )}
-                {albums.length === 0 && (
-                    <div className="mb-4">
-                    </div>
-                )}
                 <div className="space-y-4 mb-6">
+                    <div className="backdrop-blur-lg bg-black/40 rounded-2xl shadow-xl border border-zinc-800/50">
+                        <FilterSection
+                            yearFilter={yearFilter}
+                            genreFilter={genreFilter}
+                            onYearChange={setYearFilter}
+                            onGenreChange={setGenreFilter}
+                            availableYears={availableYears}
+                            availableGenres={availableGenres}
+                            showFilters={showFilters}
+                            onToggleFilters={() => setShowFilters(!showFilters)}
+                        />
+                    </div>
 
-                    <FilterSection
-                        yearFilter={yearFilter}
-                        genreFilter={genreFilter}
-                        onYearChange={setYearFilter}
-                        onGenreChange={setGenreFilter}
-                        availableYears={availableYears}
-                        availableGenres={availableGenres}
-                        showFilters={showFilters}
-                        onToggleFilters={() => setShowFilters(!showFilters)}
+                    <div className="backdrop-blur-lg bg-black/40 rounded-2xl shadow-xl border border-zinc-800/50">
+                        <RandomPicker
+                            filteredAlbums={filteredAlbums}
+                            selectedAlbum={selectedAlbum}
+                            onPick={handlePickRandom}
+                            onListen={handleListen}
+                            setSelectedAlbum={setSelectedAlbum}
+                        />
+                    </div>
 
-                    />
-
-                    <RandomPicker
-                        filteredAlbums={filteredAlbums}
-                        selectedAlbum={selectedAlbum}
-                        onPick={handlePickRandom}
-                        onListen={handleListen}
-                        setSelectedAlbum={setSelectedAlbum}
-                    />
                     <div className="backdrop-blur-md bg-black/30 rounded-lg p-4 border border-zinc-800/50">
                         <button
                             onClick={() => setShowUpload(!showUpload)}
@@ -485,7 +484,7 @@ function App() {
                     )}
                 </div>
             </div>
-        </div >
+        </div>
     );
 
 }
